@@ -194,7 +194,7 @@ AeroGuard-AI/
 ├── reports/
 │   └── .gitkeep
 ├── src/
-│   └── aeraguard/
+│   └── aeroguard/
 │       ├── __init__.py
 │       ├── actions.py
 │       ├── cli.py
