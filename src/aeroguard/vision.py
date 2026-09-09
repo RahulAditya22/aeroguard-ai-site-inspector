@@ -1,6 +1,7 @@
 """Gemini multimodal inspection client."""
 
 from pathlib import Path
+import time
 
 from .config import Settings
 from .models import InspectionResult
@@ -36,6 +37,30 @@ Confidence must reflect visual evidence, not how certain you are about the perso
 Keep descriptions factual and concise. If no threat is visible, use threat_type=none and severity=none.
 """.strip()
 
+MAX_TRANSIENT_RETRIES = 3
+RETRY_BASE_DELAY_SECONDS = 1.0
+
+
+def _is_transient_error(exc: Exception) -> bool:
+    """Return True for temporary Gemini/API availability or rate-limit errors."""
+    status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
+    if status in {429, 500, 502, 503, 504}:
+        return True
+
+    text = str(exc).upper()
+    return any(
+        marker in text
+        for marker in (
+            "429",
+            "500 INTERNAL",
+            "502 BAD",
+            "503 UNAVAILABLE",
+            "504 GATEWAY",
+            "RESOURCE_EXHAUSTED",
+            "UNAVAILABLE",
+        )
+    )
+
 
 class GeminiVisionClient:
     """Thin wrapper around the Google GenAI SDK."""
@@ -51,14 +76,32 @@ class GeminiVisionClient:
         self.settings = settings
         self.client = genai.Client(api_key=settings.gemini_api_key)
 
+    def _generate_content_with_retry(self, contents, config):
+        """Call Gemini with exponential backoff for transient service failures."""
+        last_error = None
+        for attempt in range(MAX_TRANSIENT_RETRIES + 1):
+            try:
+                return self.client.models.generate_content(
+                    model=self.settings.gemini_model,
+                    contents=contents,
+                    config=config,
+                )
+            except Exception as exc:
+                last_error = exc
+                if not _is_transient_error(exc) or attempt == MAX_TRANSIENT_RETRIES:
+                    raise
+                delay = RETRY_BASE_DELAY_SECONDS * (2**attempt)
+                time.sleep(delay)
+
+        raise last_error  # pragma: no cover
+
     def inspect(self, image_path: str | Path, mime_type: str) -> InspectionResult:
         from google.genai import types
 
         image_bytes = Path(image_path).read_bytes()
         image_part = types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
 
-        response = self.client.models.generate_content(
-            model=self.settings.gemini_model,
+        response = self._generate_content_with_retry(
             contents=[image_part, INSPECTION_PROMPT],
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
