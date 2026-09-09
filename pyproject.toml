@@ -16,6 +16,9 @@ dependencies = [
     "requests>=2.32,<3",
 ]
 
+[project.optional-dependencies]
+test = ["pytest>=8.3,<9"]
+
 [project.scripts]
 aeroguard = "aeroguard.cli:main"
 
