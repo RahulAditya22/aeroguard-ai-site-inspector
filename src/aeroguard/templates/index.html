@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AeroGuard AI | Site Inspection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">AUTONOMOUS SITE INSPECTION</p>
+        <h1>AeroGuard <span>AI</span></h1>
+        <p class="subtitle">AI-assisted aerial risk detection and incident response.</p>
+      </div>
+      <div class="status"><i></i><span id="systemStatus">SYSTEM ONLINE</span></div>
+    </header>
+
+    <section class="grid">
+      <section class="card inspection-card">
+        <div class="card-heading">
+          <div><p class="label">LIVE INSPECTION</p><h2>Analyze Site Image</h2></div>
+          <span class="pill">GEMINI VISION</span>
+        </div>
+        <form id="inspectionForm">
+          <label class="dropzone" id="dropzone" for="imageInput">
+            <input id="imageInput" name="image" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden>
+            <div id="uploadPrompt">
+              <div class="upload-icon">↑</div>
+              <strong>Drop an aerial image here</strong>
+              <span>or click to browse · JPG, PNG, WEBP · up to 15 MB</span>
+            </div>
+            <img id="preview" alt="Selected inspection image" hidden>
+          </label>
+          <div class="selected-file" id="selectedFile" hidden></div>
+          <button class="primary" id="inspectButton" type="submit">Run AI Inspection <span>→</span></button>
+        </form>
+        <div class="message" id="message" role="alert" hidden></div>
+      </section>
+
+      <section class="card result-card">
+        <div class="card-heading"><div><p class="label">INSPECTION RESULT</p><h2 id="resultTitle">Awaiting image</h2></div><span class="severity" id="severity">—</span></div>
+        <div class="result-empty" id="emptyState">Upload an image and run an inspection to receive a structured threat assessment.</div>
+        <div id="resultBody" hidden>
+          <div class="metrics">
+            <div><span>THREAT</span><strong id="threat">—</strong></div>
+            <div><span>CONFIDENCE</span><strong id="confidence">—</strong></div>
+            <div><span>AUTOMATED ACTION</span><strong id="action">—</strong></div>
+          </div>
+          <div class="detail"><span>DESCRIPTION</span><p id="description"></p></div>
+          <div class="detail"><span>RECOMMENDED ACTION</span><p id="recommendedAction"></p></div>
+          <div class="columns"><div class="detail"><span>OBSERVATIONS</span><ul id="observations"></ul></div><div class="detail"><span>UNCERTAINTIES</span><ul id="uncertainties"></ul></div></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="card history-card">
+      <div class="card-heading"><div><p class="label">INCIDENT LOG</p><h2>Recent Inspections</h2></div><button class="ghost" id="refreshButton">Refresh</button></div>
+      <div class="table-wrap"><table><thead><tr><th>TIME (UTC)</th><th>IMAGE</th><th>THREAT</th><th>SEVERITY</th><th>CONFIDENCE</th><th>ACTION</th></tr></thead><tbody id="historyBody"><tr><td colspan="6" class="empty-row">No inspections recorded yet.</td></tr></tbody></table></div>
+    </section>
+    <footer>AI-assisted decision support · Verify findings before operational action</footer>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
