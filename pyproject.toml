@@ -4,12 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aeroguard-ai"
-version = "1.0.0"
+version = "1.1.0"
 description = "AI-assisted aerial site inspection and automated incident response"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "Flask>=3.1,<4",
     "google-genai>=1.39,<2.0",
+    "gunicorn>=23,<24",
     "Pillow>=10.4,<12",
     "pydantic>=2.8,<3",
     "python-dotenv>=1.0,<2",
@@ -22,8 +24,13 @@ test = ["pytest>=8.3,<9"]
 [project.scripts]
 aeroguard = "aeroguard.cli:main"
 
+aeroguard-web = "aeroguard.web:app"
+
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+aeroguard = ["templates/*.html", "static/*.css", "static/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
